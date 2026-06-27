@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isManager() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'manager';
+    }
+    
+    function isStudent() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student';
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isManager();
+      allow delete: if isManager();
+      
+      // Subcollections
+      match /favorites/{favoriteId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /notifications/{notificationId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Books collection
+    match /books/{bookId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isManager();
+      
+      // Comments subcollection
+      match /comments/{commentId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update: if isManager() || resource.data.userId == request.auth.uid;
+        allow delete: if isManager() || resource.data.userId == request.auth.uid;
+      }
+    }
+
+    // Categories collection
+    match /categories/{categoryId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isManager();
+    }
+
+    // Loans collection
+    match /loans/{loanId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isManager());
+      allow create: if isAuthenticated();
+      allow update: if isManager();
+      allow delete: if isManager();
+    }
+
+    // Reservations collection
+    match /reservations/{reservationId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isManager());
+      allow create: if isAuthenticated();
+      allow update: if isManager();
+      allow delete: if isManager() || resource.data.userId == request.auth.uid;
+    }
+  }
+}
