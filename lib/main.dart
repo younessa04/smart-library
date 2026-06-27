@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
-import 'core/theme/app_colors.dart';
 import 'core/routing/route_generator.dart';
 import 'core/routing/app_routes.dart';
 import 'core/utils/offline_cache_service.dart';
+import 'core/utils/firestore_seeder.dart';
 
 // Repositories
 import 'data/repositories/auth_repository_impl.dart';
@@ -29,12 +30,15 @@ bool _demoMode = false;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e) {
     _demoMode = true;
   }
   if (!_demoMode) {
     await OfflineCacheService.initialize();
+    await FirestoreSeeder.seedIfEmpty();
   }
   runApp(SmartLibraryApp(demoMode: _demoMode));
 }

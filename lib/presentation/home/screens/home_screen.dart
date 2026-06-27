@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               if (bookProvider.popularBooks.isNotEmpty)
                 SizedBox(
-                  height: 260,
+                  height: 275,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: bookProvider.popularBooks.length,
@@ -214,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               if (bookProvider.newBooks.isNotEmpty)
                 SizedBox(
-                  height: 260,
+                  height: 275,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: bookProvider.newBooks.length,
@@ -252,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               if (bookProvider.topRatedBooks.isNotEmpty)
                 SizedBox(
-                  height: 260,
+                  height: 275,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: bookProvider.topRatedBooks.length,
