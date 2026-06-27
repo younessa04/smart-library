@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
-import 'core/routing/route_generator.dart';
-import 'core/routing/app_routes.dart';
-import 'core/utils/offline_cache_service.dart';
-import 'core/utils/firestore_seeder.dart';
-
-// Repositories
-import 'data/repositories/auth_repository_impl.dart';
-import 'data/repositories/book_category_user_repo_impl.dart';
-import 'data/repositories/remaining_repo_impl.dart';
-import 'domain/repositories/repository_interfaces.dart';
-
-// Providers
-import 'presentation/auth/providers/auth_provider.dart';
-import 'presentation/books/providers/book_provider.dart';
-import 'presentation/favorites/providers/favorites_provider.dart';
-import 'presentation/loans/providers/loan_provider.dart';
-import 'presentation/reservations/providers/reservation_provider.dart';
-import 'presentation/notifications/providers/notifications_provider.dart';
-
-// Demo data
-import 'data/demo/demo_repositories.dart';
-
-bool _demoMode = false;
+import 'screens/splash_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/forgot_password_screen.dart';
+import 'screens/email_verification_screen.dart';
+import 'screens/main_shell.dart';
+import 'screens/book_list_screen.dart';
+import 'screens/book_detail_screen.dart';
+import 'screens/add_edit_book_screen.dart';
+import 'screens/category_books_screen.dart';
+import 'screens/search_screen.dart';
+import 'screens/favorites_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/edit_profile_screen.dart';
+import 'screens/points_badges_screen.dart';
+import 'screens/my_loans_screen.dart';
+import 'screens/loans_management_screen.dart';
+import 'screens/my_reservations_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/chat_screen.dart';
+import 'screens/qr_scanner_screen.dart';
+import 'screens/isbn_scanner_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,163 +32,66 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-  } catch (e) {
-    _demoMode = true;
-  }
-  if (!_demoMode) {
-    await OfflineCacheService.initialize();
-    await FirestoreSeeder.seedIfEmpty();
-  }
-  runApp(SmartLibraryApp(demoMode: _demoMode));
+  } catch (_) {}
+  runApp(const SmartLibraryApp());
 }
 
 class SmartLibraryApp extends StatelessWidget {
-  final bool demoMode;
-  const SmartLibraryApp({super.key, this.demoMode = false});
+  const SmartLibraryApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (demoMode) {
-      return _buildDemoApp();
-    }
-    return _buildFirebaseApp();
-  }
-
-  Widget _buildDemoApp() {
-    return MultiProvider(
-      providers: [
-        Provider<AuthRepository>(create: (_) => DemoAuthRepository()),
-        Provider<UserRepository>(create: (_) => DemoUserRepository()),
-        Provider<BookRepository>(create: (_) => DemoBookRepository()),
-        Provider<CategoryRepository>(create: (_) => DemoCategoryRepository()),
-        Provider<LoanRepository>(create: (_) => DemoLoanRepository()),
-        Provider<ReservationRepository>(create: (_) => DemoReservationRepository()),
-        Provider<CommentRepository>(create: (_) => DemoCommentRepository()),
-        Provider<FavoriteRepository>(create: (_) => DemoFavoriteRepository()),
-        Provider<NotificationRepository>(create: (_) => DemoNotificationRepository()),
-        ChangeNotifierProvider(
-          create: (context) => AuthProvider(
-            authRepository: context.read<AuthRepository>(),
-            userRepository: context.read<UserRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => BookProvider(
-            bookRepository: context.read<BookRepository>(),
-            categoryRepository: context.read<CategoryRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => FavoritesProvider(
-            favoriteRepository: context.read<FavoriteRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => LoanProvider(
-            loanRepository: context.read<LoanRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => ReservationProvider(
-            reservationRepository: context.read<ReservationRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => NotificationsProvider(
-            notificationRepository: context.read<NotificationRepository>(),
-          ),
-        ),
-      ],
-      child: MaterialApp(
-        title: 'Smart Library',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        initialRoute: AppRoutes.splash,
-        onGenerateRoute: RouteGenerator.generateRoute,
-        builder: (context, child) => Stack(
-          children: [
-            child ?? const SizedBox(),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Material(
-                color: Colors.orange,
-                child: SafeArea(
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: const Text(
-                      'DEMO MODE - Configurez Firebase pour le mode production',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFirebaseApp() {
-    return MultiProvider(
-      providers: [
-        Provider<AuthRepository>(create: (_) => AuthRepositoryImpl()),
-        Provider<UserRepository>(create: (_) => UserRepositoryImpl()),
-        Provider<BookRepository>(create: (_) => BookRepositoryImpl()),
-        Provider<CategoryRepository>(create: (_) => CategoryRepositoryImpl()),
-        Provider<LoanRepository>(create: (_) => LoanRepositoryImpl()),
-        Provider<ReservationRepository>(create: (_) => ReservationRepositoryImpl()),
-        Provider<CommentRepository>(create: (_) => CommentRepositoryImpl()),
-        Provider<FavoriteRepository>(create: (_) => FavoriteRepositoryImpl()),
-        Provider<NotificationRepository>(create: (_) => NotificationRepositoryImpl()),
-        ChangeNotifierProvider(
-          create: (context) => AuthProvider(
-            authRepository: context.read<AuthRepository>(),
-            userRepository: context.read<UserRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => BookProvider(
-            bookRepository: context.read<BookRepository>(),
-            categoryRepository: context.read<CategoryRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => FavoritesProvider(
-            favoriteRepository: context.read<FavoriteRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => LoanProvider(
-            loanRepository: context.read<LoanRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => ReservationProvider(
-            reservationRepository: context.read<ReservationRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => NotificationsProvider(
-            notificationRepository: context.read<NotificationRepository>(),
-          ),
-        ),
-      ],
-      child: MaterialApp(
-        title: 'Smart Library',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        initialRoute: AppRoutes.splash,
-        onGenerateRoute: RouteGenerator.generateRoute,
-      ),
+    return MaterialApp(
+      title: 'Smart Library',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      initialRoute: '/',
+      onGenerateRoute: (settings) {
+        Widget page;
+        switch (settings.name) {
+          case '/': page = const SplashScreen(); break;
+          case '/login': page = const LoginScreen(); break;
+          case '/register': page = const RegisterScreen(); break;
+          case '/forgot-password': page = const ForgotPasswordScreen(); break;
+          case '/email-verification': page = const EmailVerificationScreen(); break;
+          case '/main': page = const MainShell(); break;
+          case '/search': page = const SearchScreen(); break;
+          case '/book-detail':
+            final bookId = settings.arguments as String;
+            page = BookDetailScreen(bookId: bookId); break;
+          case '/add-edit-book':
+            page = settings.arguments != null
+                ? AddEditBookScreen(bookId: settings.arguments as String?)
+                : const AddEditBookScreen(); break;
+          case '/category-books':
+            final args = settings.arguments as Map<String, dynamic>;
+            page = CategoryBooksScreen(
+              categoryId: args['categoryId'] as String,
+              categoryName: args['categoryName'] as String,
+            ); break;
+          case '/my-loans': page = const MyLoansScreen(); break;
+          case '/loans-management': page = const LoansManagementScreen(); break;
+          case '/my-reservations': page = const MyReservationsScreen(); break;
+          case '/dashboard': page = const DashboardScreen(); break;
+          case '/notifications': page = const NotificationsScreen(); break;
+          case '/edit-profile': page = const EditProfileScreen(); break;
+          case '/chat': page = const ChatScreen(); break;
+          case '/qr-scanner': page = const QrScannerScreen(); break;
+          case '/isbn-scanner': page = const IsbnScannerScreen(); break;
+          case '/badges': page = const PointsBadgesScreen(); break;
+          case '/favorites': page = const FavoritesScreen(); break;
+          case '/profile': page = const ProfileScreen(); break;
+          case '/books': page = const BookListScreen(); break;
+          default:
+            page = Scaffold(
+              appBar: AppBar(title: const Text('Erreur')),
+              body: const Center(child: Text('Page non trouv\u00e9e')),
+            );
+        }
+        return MaterialPageRoute(builder: (_) => page, settings: settings);
+      },
     );
   }
 }
